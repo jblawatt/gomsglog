@@ -5,6 +5,7 @@ import (
 
 	"github.com/jblawatt/gomsglog/gomsglog/parsers"
 	"github.com/jinzhu/gorm"
+	"github.com/spf13/viper"
 
 	// Datenbank Dialekt einbinden.
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
@@ -60,8 +61,8 @@ type URLModel struct {
 	Params     string
 }
 
-func init() {
-	db, _ := gorm.Open("sqlite3", "db.sqlite3")
+func AutoMigrate() {
+	db := GetDB()
 	defer db.Close()
 
 	db.AutoMigrate(
@@ -75,10 +76,17 @@ func init() {
 }
 
 func GetDB() *gorm.DB {
-	db, _ := gorm.Open("sqlite3", "db.sqlite3")
-	db.LogMode(true)
-	return db.Debug()
-	// return db
+	db, _ := gorm.Open(
+		viper.GetString("database.dialect"),
+		viper.GetString("database.connectionstring"),
+	)
+	debug := viper.GetBool("debug")
+	if debug {
+		db.LogMode(true)
+		return db.Debug()
+	}
+	return db
+
 }
 
 func LoadMessages(limit int, offset int, tags []string, users []string) []MessageModel {

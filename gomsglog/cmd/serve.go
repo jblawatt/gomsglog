@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/jblawatt/gomsglog/gomsglog/http"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var serveCmd = &cobra.Command{
@@ -10,7 +11,7 @@ var serveCmd = &cobra.Command{
 	Short:   "Serves a REST API for this",
 	Aliases: []string{"server"},
 	Run: func(cmd *cobra.Command, args []string) {
-		addr, _ := cmd.PersistentFlags().GetString("bind")
+		addr := viper.GetString("bind")
 		http.Serve(addr)
 	},
 }
@@ -18,4 +19,5 @@ var serveCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(serveCmd)
 	serveCmd.PersistentFlags().StringP("bind", "b", ":1234", "Where to bind to.")
+	viper.BindPFlag("bind", serveCmd.PersistentFlags().Lookup("bind"))
 }

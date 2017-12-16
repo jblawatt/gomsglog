@@ -1,56 +1,40 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"net/http"
-	"strings"
+	"os"
 
-	"github.com/gorilla/mux"
+	"github.com/jblawatt/gomsglog/gomsglog/cmd"
+	"github.com/spf13/viper"
 )
-
-type Message struct {
-	ID           string
-	Original     string
-	HTML         string
-	RelatedUsers []string
-	Tags         []string
-	Attributes   map[string]interface{}
-	URLs         []string
-}
-
-func NewMessage(input string) Message {
-	message := Message{
-		ID:         newUUID(),
-		Original:   input,
-		HTML:       input,
-		Attributes: make(map[string]interface{}),
-		Tags:       make([]string, 0),
-		URLs:       make([]string, 0),
-	}
-	replacements := make(map[string]string)
-
-	HandleUsers(&message, &replacements)
-	HandleTags(&message, &replacements)
-	HandleLinks(&message, &replacements)
-	HandleAttrs(&message, &replacements)
-
-	for key, value := range replacements {
-		message.HTML = strings.Replace(message.HTML, key, value, 1)
-	}
-
-	return message
-}
 
 func main() {
 
-	router := mux.NewRouter()
-	router.HandleFunc("/api/messages", CreateMessage).Methods("POST")
-	router.HandleFunc("/api/messages", GetMessages).Methods("GET")
-	router.HandleFunc("/api/messages/{messageID}", GetMessage).Methods("GET")
+	viper.SetEnvPrefix("ML_")
+	viper.SetConfigName(".mlrc")
+	viper.AddConfigPath("$HOME")
+	viper.AddConfigPath(".")
+	viper.ReadInConfig()
 
-	// router.HandleFunc("/api/tags",).Methods("GET")
-	// router.HandleFunc("/api/tags",).Methods("PATCH")
+	viper.SetDefault("database.dialect", "sqlite3")
+	viper.SetDefault("database.connectionstring", "db.sqlite3")
+	viper.SetDefault("database.debug", false)
 
-	log.Fatal(http.ListenAndServe("127.0.0.1:12345", router))
+	if err := cmd.RootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
+	}
+}
 
+func setupLog() {
+	logfile := viper.GetString("logfile")
+
+	if logfile != "" {
+		f, _ := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		defer f.Close()
+		log.SetOutput(f)
+	} else {
+		log.SetOutput(os.Stdout)
+	}
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/jblawatt/gomsglog/gomsglog"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var COMPLETE_TEMPLATE = `
@@ -26,7 +27,8 @@ Date:    {{.Created.Format "2006-01-02 15:04"}}
 {{ "Message:" | hired }} {{.Original | hired }}
 `
 
-var SHORT_TMEPLATE = `{{.ID}}: {{.Original}}
+var SHORT_TEMPLATE = `
+{{.ID}}: {{.Original}}
 `
 
 var templates = map[string]*template.Template{
@@ -38,12 +40,12 @@ var templates = map[string]*template.Template{
 
 var logCmd = &cobra.Command{
 	Use:     "log",
-	Short: "Lists all messages.",
+	Short:   "Lists all messages.",
 	Aliases: []string{"l", "ls"},
 	Run: func(cmd *cobra.Command, args []string) {
 		flags := cmd.PersistentFlags()
 		limit, _ := flags.GetInt("limit")
-		templ, _ := flags.GetString("template")
+		templ := viper.GetString("log.template")
 		tags, _ := flags.GetStringArray("tag")
 		users, _ := flags.GetStringArray("user")
 		messages := gomsglog.LoadMessages(limit, 0, tags, users)
@@ -56,10 +58,13 @@ var logCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(logCmd)
-	logCmd.PersistentFlags().IntP("limit", "l", 100, "Number of Entries")
-	logCmd.PersistentFlags().StringP("template", "T", "default", "Template")
-	logCmd.PersistentFlags().StringArrayP("user", "u", []string{}, "Users to filter")
-	logCmd.PersistentFlags().StringArrayP("tag", "t", []string{}, "Tags to filter")
+	flags := logCmd.PersistentFlags()
+	flags.IntP("limit", "l", 100, "Number of Entries")
+	flags.StringP("template", "T", "default", "Template")
+	flags.StringArrayP("user", "u", []string{}, "Users to filter")
+	flags.StringArrayP("tag", "t", []string{}, "Tags to filter")
+
+	viper.BindPFlag("log.template", flags.Lookup("template"))
 
 	funcMap := template.FuncMap{
 		"green":     color.GreenString,
@@ -92,7 +97,7 @@ func init() {
 		panic(err)
 	}
 
-	if _, err := templates["short"].Parse(SHORT_TMEPLATE); err != nil {
+	if _, err := templates["short"].Parse(SHORT_TEMPLATE); err != nil {
 		panic(err)
 	}
 
