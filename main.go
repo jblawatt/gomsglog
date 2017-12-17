@@ -10,8 +10,18 @@ import (
 )
 
 func main() {
+	setupViper()
+	setupLog()
 
+	if err := cmd.RootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
+	}
+}
+
+func setupViper() {
 	viper.SetEnvPrefix("ML_")
+	viper.AutomaticEnv()
 	viper.SetConfigName(".mlrc")
 	viper.AddConfigPath("$HOME")
 	viper.AddConfigPath(".")
@@ -20,11 +30,6 @@ func main() {
 	viper.SetDefault("database.dialect", "sqlite3")
 	viper.SetDefault("database.connectionstring", "db.sqlite3")
 	viper.SetDefault("database.debug", false)
-
-	if err := cmd.RootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(1)
-	}
 }
 
 func setupLog() {

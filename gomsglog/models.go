@@ -80,7 +80,7 @@ func GetDB() *gorm.DB {
 		viper.GetString("database.dialect"),
 		viper.GetString("database.connectionstring"),
 	)
-	debug := viper.GetBool("debug")
+	debug := viper.GetBool("database.debug")
 	if debug {
 		db.LogMode(true)
 		return db.Debug()

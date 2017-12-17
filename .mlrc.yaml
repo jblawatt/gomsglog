@@ -1,0 +1,10 @@
+debug: false
+logfile: out.log
+
+log:
+  template: default
+
+database:
+  debug: true
+  dialect: sqlite3
+  connectionstring: db.sqlite3
