@@ -1,11 +1,16 @@
 package gomsglog
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/jblawatt/gomsglog/gomsglog/parsers"
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/viper"
+
+	jww "github.com/spf13/jwalterweatherman"
 
 	// Datenbank Dialekt einbinden.
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
@@ -76,9 +81,16 @@ func AutoMigrate() {
 }
 
 func GetDB() *gorm.DB {
+	dbpath := viper.GetString("database.connectionstring")
+	dbabspath, pathError := filepath.Abs(dbpath)
+	if pathError != nil {
+		fmt.Fprintf(os.Stderr, "Error loading absolute database path %s.", dbpath)
+		os.Exit(1)
+	}
+	jww.DEBUG.Printf("Loading Database from %s", dbabspath)
 	db, _ := gorm.Open(
 		viper.GetString("database.dialect"),
-		viper.GetString("database.connectionstring"),
+		dbabspath,
 	)
 	debug := viper.GetBool("database.debug")
 	if debug {

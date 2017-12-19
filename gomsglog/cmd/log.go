@@ -1,7 +1,9 @@
 package cmd
 
 import (
-	"os"
+	"bytes"
+	"fmt"
+	"strings"
 	"text/template"
 
 	"github.com/fatih/color"
@@ -14,17 +16,18 @@ var COMPLETE_TEMPLATE = `
 ID:      {{.ID}}
 Date:    {{.Created.Format "2006-01-02 15:04"}}
 {{ "Message:" | hired }} {{.Original | hired }}
-Tags:    {{range .Tags}}{{.ScreenName}} {{end}}
-Users:   {{range .RelatedUsers}}{{.ScreenName}} {{end}}
+Tags:    {{range .Tags}}#{{.ScreenName}} {{end}}
+Users:   {{range .RelatedUsers}}@{{.ScreenName}} {{end}}
 Attrs:   {{range .Attributes}}{{.ScreenName}}={{.String}} {{end}}
-URLs: {{range .URLs}}
-  - {{.URL}}{{end}}
+URLs:    {{range .URLs}}{{.URL}} {{end}}
 `
 
 var DEFAULT_TEMPLATE = `
 ID:      {{.ID}}
 Date:    {{.Created.Format "2006-01-02 15:04"}}
 {{ "Message:" | hired }} {{.Original | hired }}
+Tags:    {{range .Tags}}#{{.ScreenName}} {{end}}
+Users:   {{range .RelatedUsers}}@{{.ScreenName}} {{end}}
 `
 
 var SHORT_TEMPLATE = `
@@ -34,7 +37,6 @@ var SHORT_TEMPLATE = `
 var templates = map[string]*template.Template{
 	"default":  template.New("default"),
 	"short":    template.New("short"),
-	"json":     template.New("json"),
 	"complete": template.New("complete"),
 }
 
@@ -44,14 +46,24 @@ var logCmd = &cobra.Command{
 	Aliases: []string{"l", "ls"},
 	Run: func(cmd *cobra.Command, args []string) {
 		flags := cmd.PersistentFlags()
-		limit, _ := flags.GetInt("limit")
+		limit := viper.GetInt("log.limit")
+		offset := viper.GetInt("log.offset")
 		templ := viper.GetString("log.template")
 		tags, _ := flags.GetStringArray("tag")
 		users, _ := flags.GetStringArray("user")
-		messages := gomsglog.LoadMessages(limit, 0, tags, users)
+		messages := gomsglog.LoadMessages(limit, offset, tags, users)
 		for i := len(messages) - 1; i >= 0; i-- {
 			msg := messages[i]
-			templates[templ].Execute(os.Stdout, msg)
+			var buf bytes.Buffer
+			templates[templ].Execute(&buf, msg)
+			output := buf.String()
+			for _, cutset := range []string{" ", "\t", "\n"} {
+				output = strings.Trim(output, cutset)
+			}
+			fmt.Println(output)
+			if i != 0 {
+				fmt.Println("")
+			}
 		}
 	},
 }
@@ -60,11 +72,13 @@ func init() {
 	RootCmd.AddCommand(logCmd)
 	flags := logCmd.PersistentFlags()
 	flags.IntP("limit", "l", 100, "Number of Entries")
+	flags.IntP("offset", "o", 0, "List offset")
 	flags.StringP("template", "T", "default", "Template")
 	flags.StringArrayP("user", "u", []string{}, "Users to filter")
 	flags.StringArrayP("tag", "t", []string{}, "Tags to filter")
 
 	viper.BindPFlag("log.template", flags.Lookup("template"))
+	viper.BindPFlag("log.limit", flags.Lookup("limit"))
 
 	funcMap := template.FuncMap{
 		"green":     color.GreenString,

@@ -1,10 +1,11 @@
 debug: false
-logfile: out.log
+# logfile: out.log
+loglevel: DEBUG
 
 log:
   template: default
 
 database:
-  debug: true
+  debug: false
   dialect: sqlite3
-  connectionstring: db.sqlite3
+  connectionstring: $HOME/db.sqlite3
