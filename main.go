@@ -6,19 +6,35 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
+
+	"github.com/jblawatt/gomsglog/gomsglog"
 
 	"github.com/jblawatt/gomsglog/gomsglog/cmd"
 	jww "github.com/spf13/jwalterweatherman"
 	"github.com/spf13/viper"
 )
 
+var (
+	binary   = "ml"
+	version  = "dev"
+	builDate = time.Now().Format("2006-01-02")
+)
+
 func main() {
 	setupViper()
+	setVersionInfo(binary, version, builDate)
 
 	if err := cmd.RootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
+}
+
+func setVersionInfo(binary string, version string, build string) {
+	gomsglog.SetBinaryInfo(binary)
+	gomsglog.SetVersionInfo(version)
+	gomsglog.SetBuildDateInfo(builDate)
 }
 
 func setupViper() {

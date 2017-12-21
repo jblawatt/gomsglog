@@ -1,7 +1,7 @@
 #!/usr/bin/env make
 
 ml:
-	go build -o ml.exe
+	go build -o ml.exe -ldflags "-X main.version=0.1 -X main.binary=ml" -v -x
 
 
 %.so:
