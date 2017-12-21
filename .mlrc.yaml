@@ -1,11 +1,17 @@
 debug: false
-# logfile: out.log
+logfile: out.log
 loglevel: DEBUG
 
 log:
   template: default
 
+parser:
+  - attrs.so
+  - tags.so
+  - urls.so
+  - users.so
+
 database:
   debug: false
   dialect: sqlite3
-  connectionstring: $HOME/db.sqlite3
+  connectionstring: C:/Users/jblaw/ml.sqlite3

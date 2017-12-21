@@ -8,7 +8,7 @@ import (
 
 type URLsParser struct{}
 
-func (u URLsParser) Parse(m *Message, rm *ReplacementManager) {
+func (u URLsParser) Parse(m *Message, rm *ReplacementManager) error {
 	urlsRe := regexp.MustCompile(`(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?`)
 	for _, match := range urlsRe.FindAllStringSubmatch(m.Original, -1) {
 		replID := NewUUID()
@@ -23,6 +23,7 @@ func (u URLsParser) Parse(m *Message, rm *ReplacementManager) {
 		)
 		m.URLs = append(m.URLs, match[0])
 	}
+	return nil
 }
 
 func init() {

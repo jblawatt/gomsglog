@@ -159,7 +159,6 @@ func LoadMessage(messageID int) (MessageModel, bool) {
 
 func Persist(message parsers.Message) *MessageModel {
 	db := GetDB()
-	db.LogMode(true)
 	defer db.Close()
 
 	urls := make([]URLModel, 0)

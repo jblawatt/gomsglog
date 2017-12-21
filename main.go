@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/jblawatt/gomsglog/gomsglog/cmd"
 	jww "github.com/spf13/jwalterweatherman"
 	"github.com/spf13/viper"
@@ -14,7 +14,6 @@ import (
 
 func main() {
 	setupViper()
-	setupLog()
 
 	if err := cmd.RootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
@@ -27,8 +26,9 @@ func setupViper() {
 	viper.AutomaticEnv()
 	viper.BindEnv("debug", "ML_DEBUG")
 	viper.SetConfigName(".mlrc")
-	viper.AddConfigPath("$HOME")
 	viper.AddConfigPath(".")
+	viper.AddConfigPath(os.Getenv("HOME"))
+	viper.AddConfigPath(path.Join(os.Getenv("APPDATA"), "ml"))
 	viper.ReadInConfig()
 
 	viper.SetDefault("database.dialect", "sqlite3")
@@ -37,7 +37,10 @@ func setupViper() {
 	viper.SetDefault("loglevel", "WARN")
 	viper.SetDefault("debug", false)
 
-	fmt.Println(color.RedString("DEBUG ", viper.GetBool("debug")))
+	setupLog()
+
+	jww.DEBUG.Printf("Using config file %s.", viper.ConfigFileUsed())
+
 }
 
 var thresholds = []jww.Threshold{
@@ -59,7 +62,7 @@ func setupLog() {
 			jww.SetLogThreshold(t)
 		}
 	}
-	if logfile != "" {
+	if logfile != "" || logfile == "stdout" {
 		f, _ := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		log.SetOutput(f)
 		jww.SetLogOutput(f)

@@ -8,7 +8,7 @@ import (
 
 type UsersParser struct{}
 
-func (u UsersParser) Parse(m *Message, rm *ReplacementManager) {
+func (u UsersParser) Parse(m *Message, rm *ReplacementManager) error {
 	userRe := regexp.MustCompile(`@(?P<user>\w+)`)
 	for _, match := range userRe.FindAllStringSubmatch(m.Original, -1) {
 		replID := NewUUID()
@@ -23,6 +23,7 @@ func (u UsersParser) Parse(m *Message, rm *ReplacementManager) {
 		)
 		m.RelatedUsers = append(m.RelatedUsers, strings.ToLower(match[1]))
 	}
+	return nil
 }
 
 func init() {

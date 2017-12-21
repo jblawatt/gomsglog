@@ -8,7 +8,7 @@ import (
 
 type TagsParser struct{}
 
-func (t TagsParser) Parse(m *Message, rm *ReplacementManager) {
+func (t TagsParser) Parse(m *Message, rm *ReplacementManager) error {
 	tagsRe := regexp.MustCompile(`#(\w+)`)
 	for _, match := range tagsRe.FindAllStringSubmatch(m.Original, -1) {
 		replID := NewUUID()
@@ -23,6 +23,7 @@ func (t TagsParser) Parse(m *Message, rm *ReplacementManager) {
 		)
 		m.Tags = append(m.Tags, strings.ToLower(match[1]))
 	}
+	return nil
 }
 
 func init() {

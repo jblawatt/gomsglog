@@ -8,7 +8,7 @@ import (
 
 type AttrsParser struct{}
 
-func (p AttrsParser) Parse(m *Message, rm *ReplacementManager) {
+func (p AttrsParser) Parse(m *Message, rm *ReplacementManager) error {
 	attrRe := regexp.MustCompile(`\&(\w+)[=:]([\w\-]+)`)
 	for _, match := range attrRe.FindAllStringSubmatch(m.Original, -1) {
 		replID := NewUUID()
@@ -24,7 +24,7 @@ func (p AttrsParser) Parse(m *Message, rm *ReplacementManager) {
 		)
 		m.Attributes[match[1]] = match[2]
 	}
-
+	return nil
 }
 
 func init() {
