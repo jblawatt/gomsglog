@@ -1,0 +1,50 @@
+<html>
+
+<head>
+    <title>GoMSG-Log</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css" type="text/css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Amatic+SC|PT+Sans');
+        body {
+            font-family: "PT Sans";
+            font-size: 5px;
+        }
+
+        thead {
+            font-family: "Amatic SC";
+        }
+
+        .gml-item {
+            font-weight: bold;
+        }
+
+        .gml-item:before {
+            color: lawngreen;
+        }
+
+        .gml-item__tag:before {
+            content: "#"
+        }
+
+        .gml-item__user:before {
+            content: "@"
+        }
+
+        .gml-item__attr:before {
+            content: "$"
+        }
+
+        table tbody tr {
+            opacity: 1;
+            transition: opacity 2s linear;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app"></div>
+    <script src="/static/js/mithril.js"></script>
+    <script src="/static/js/gomsglog.js"></script>
+</body>
+
+</html>

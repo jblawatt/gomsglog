@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -117,28 +118,11 @@ func GetTagsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, `<html>
-		<head>
-			<title>GoMSG-Log</title>
-			
-		</head>
-		<body>
-			<div id="app">
-				<ul>
-					<li v-for="msg in messages">
-						{{msg.ID}} <br>
-						<div v-html="msg.HTML"></div>
-					</li>
-				</ul>
-				<form method="POST" action="/api/messages">
-					<input placeholder="tell me more">
-					</input>
-				</form>
-			</div>
-			<script src="https://unpkg.com/vue"></script>
-			<script src="/static/js/gomsglog.js"></script>
-		</body>
-	</html>`)
+	t, err := ioutil.ReadFile("templates/index.html")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Fprintf(w, string(t))
 }
 
 var updater = websocket.Upgrader{}
