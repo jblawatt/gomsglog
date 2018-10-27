@@ -43,7 +43,7 @@ var templates = map[string]*template.Template{
 var logCmd = &cobra.Command{
 	Use:     "log",
 	Short:   "Lists all messages.",
-	Aliases: []string{"l", "ls"},
+	Aliases: []string{"l", "ls", "list"},
 	Run: func(cmd *cobra.Command, args []string) {
 		flags := cmd.PersistentFlags()
 		limit := viper.GetInt("log.limit")
@@ -51,7 +51,8 @@ var logCmd = &cobra.Command{
 		templ := viper.GetString("log.template")
 		tags, _ := flags.GetStringArray("tag")
 		users, _ := flags.GetStringArray("user")
-		messages := gomsglog.LoadMessages(limit, offset, tags, users)
+		attrs, _ := flags.GetStringArray("attr")
+		messages := gomsglog.LoadMessages(limit, offset, tags, users, attrs)
 		for i := len(messages) - 1; i >= 0; i-- {
 			msg := messages[i]
 			var buf bytes.Buffer
@@ -76,6 +77,7 @@ func init() {
 	flags.StringP("template", "T", "default", "Template")
 	flags.StringArrayP("user", "u", []string{}, "Users to filter")
 	flags.StringArrayP("tag", "t", []string{}, "Tags to filter")
+	flags.StringArrayP("attr", "a", []string{}, "Attributes to filter")
 
 	viper.BindPFlag("log.template", flags.Lookup("template"))
 	viper.BindPFlag("log.limit", flags.Lookup("limit"))

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/jblawatt/gomsglog/gomsglog/parsers"
@@ -44,12 +45,14 @@ type UserModel struct {
 type AttributeSet struct {
 	gorm.Model
 	MessageRef  uint
-	Slug        string
+	Slug        string `grom:"index:slug"`
 	ScreenName  string
+	Type        string `grom:"index:type"`
 	DateValue   time.Time
 	IntValue    int64
 	FloatValue  float64
-	StringValue string
+	StringValue string `grom:"index:string_value"`
+	BoolValue   bool
 }
 
 func (a *AttributeSet) String() string {
@@ -101,19 +104,19 @@ func GetDB() *gorm.DB {
 
 }
 
-func LoadMessages(limit int, offset int, tags []string, users []string) []MessageModel {
+func LoadMessages(limit int, offset int, tags []string, users []string, attrs []string) []MessageModel {
 	db := GetDB()
 	defer db.Close()
 
 	response := make([]MessageModel, 0)
-	db = db.
+	query := db.
 		Preload("RelatedUsers").
 		Preload("Tags").
 		Preload("Attributes").
 		Preload("URLs")
 
 	if len(tags) > 0 {
-		db = db.Joins(
+		query = query.Joins(
 			`JOIN "tag_models"
 				ON "tag_models"."message_ref" = "message_models"."id" 
 				AND "tag_models"."slug" in (?)`,
@@ -122,7 +125,7 @@ func LoadMessages(limit int, offset int, tags []string, users []string) []Messag
 	}
 
 	if len(users) > 0 {
-		db = db.Joins(
+		query = query.Joins(
 			`JOIN "user_models"
 				ON "user_models"."message_ref" = "message_models"."id" 
 				AND "user_models"."slug" in (?)`,
@@ -130,7 +133,20 @@ func LoadMessages(limit int, offset int, tags []string, users []string) []Messag
 		)
 	}
 
-	db.
+	if len(attrs) > 0 {
+		fmt.Println("HAVE ATTRS")
+		query = query.Joins(
+			`JOIN "attribute_sets"
+				ON "attribute_sets"."message_ref" = "message_models"."id"`,
+		)
+
+		for _, kvPair := range attrs {
+			kvSplit := strings.Split(kvPair, "=")
+			query = query.Where("slug = ? AND string_value = ?", kvSplit[0], kvSplit[1])
+		}
+	}
+
+	query.
 		Order(`"message_models"."created_at" DESC`).
 		Limit(limit).
 		Offset(offset).
@@ -181,7 +197,11 @@ func Persist(message parsers.Message) *MessageModel {
 		attrs = append(attrs, AttributeSet{
 			Slug:        key,
 			ScreenName:  key,
-			StringValue: val.(string),
+			Type:        val.Type,
+			StringValue: val.StringValue,
+			DateValue:   val.DateValue,
+			FloatValue:  val.FloatValue,
+			BoolValue:   val.BoolValue,
 		})
 	}
 

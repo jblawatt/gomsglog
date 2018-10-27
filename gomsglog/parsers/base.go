@@ -15,7 +15,7 @@ type Message struct {
 	HTML         string
 	RelatedUsers []string
 	Tags         []string
-	Attributes   map[string]interface{}
+	Attributes   map[string]Attr
 	URLs         []string
 }
 
@@ -48,7 +48,7 @@ func NewMessage(input string) Message {
 		ID:         NewUUID(),
 		Original:   input,
 		HTML:       input,
-		Attributes: make(map[string]interface{}),
+		Attributes: make(map[string]Attr),
 		Tags:       make([]string, 0),
 		URLs:       make([]string, 0),
 	}

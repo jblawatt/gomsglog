@@ -14,11 +14,14 @@ import (
 func Serve(addr string) {
 
 	router := mux.NewRouter()
+	// router.HandleFunc("/spec", )
 	router.HandleFunc("/api/messages", CreateMessageHandler).Methods("POST")
 	router.HandleFunc("/api/messages", GetMessagesHandler).Methods("GET")
 	router.HandleFunc("/api/messages/{messageID}", GetMessageHandler).Methods("GET")
 	router.HandleFunc("/api/messages/{messageID}", DeleteMessageHandler).Methods("DELETE")
 	router.HandleFunc("/api/tags", GetTagsHandler).Methods("GET")
+	router.HandleFunc("/api/users", GetUsersHandler).Methods("GET")
+	router.HandleFunc("/api/attrs", GetAttrsHandler).Methods("GET")
 	router.PathPrefix("/static").Handler(http.FileServer(http.Dir("./")))
 	router.HandleFunc("/", IndexHandler).Methods("GET")
 	router.HandleFunc("/ws", WebSocketHandler)

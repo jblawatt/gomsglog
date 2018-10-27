@@ -16,7 +16,7 @@ func (u URLsParser) Parse(m *Message, rm *ReplacementManager) error {
 		rm.Add(
 			replID,
 			fmt.Sprintf(
-				`<a class="gml-item gml-item__link" href="%s">%s</a>`,
+				`<a class="gml-item gml-item__link" href="%s" target="_blank">%s</a>`,
 				match[0],
 				match[0],
 			),

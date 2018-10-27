@@ -75,11 +75,18 @@ func GetMessagesHandler(w http.ResponseWriter, r *http.Request) {
 	if usersStr := r.URL.Query().Get("users"); usersStr != "" {
 		users = strings.Split(usersStr, ",")
 	}
+
+	attrs := []string{}
+	if attrsStr := r.URL.Query().Get("attrs"); attrsStr != "" {
+		attrs = strings.Split(attrsStr, ",")
+	}
+
 	messages := gomsglog.LoadMessages(
 		limit,
 		offset,
 		tags,
 		users,
+		attrs,
 	)
 	json.NewEncoder(w).Encode(&messages)
 }
@@ -115,6 +122,14 @@ func GetTagsHandler(w http.ResponseWriter, r *http.Request) {
 	db.Model(&gomsglog.TagModel{}).Pluck(`DISTINCT "slug"`, &slugs)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(&slugs)
+}
+
+func GetAttrsHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
+	
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {

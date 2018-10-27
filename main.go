@@ -86,4 +86,5 @@ func setupLog() {
 		log.SetOutput(os.Stdout)
 		jww.SetLogOutput(os.Stdout)
 	}
+
 }
