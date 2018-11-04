@@ -43,16 +43,8 @@ func RegisterParser(parser MessageParser) {
 	parserRegistry = append(parserRegistry, parser)
 }
 
-func NewMessage(input string) Message {
-	message := Message{
-		ID:         NewUUID(),
-		Original:   input,
-		HTML:       input,
-		Attributes: make(map[string]Attr),
-		Tags:       make([]string, 0),
-		URLs:       make([]string, 0),
-	}
-	// replacements := make(map[string]string)
+func ApplyToMessage(input string, message *Message) {
+
 	rm := make(ReplacementManager)
 
 	parserPlugins := viper.GetStringSlice("parsers")
@@ -67,7 +59,7 @@ func NewMessage(input string) Message {
 			jww.ERROR.Printf("Error loading parse func of %s: %s", p, fnErr.Error())
 			continue
 		}
-		perr := parseFunc.(func(*Message, *ReplacementManager) error)(&message, &rm)
+		perr := parseFunc.(func(*Message, *ReplacementManager) error)(message, &rm)
 		if perr != nil {
 			jww.ERROR.Printf("Error parsing in %s: %s", p, perr.Error())
 			continue
@@ -75,7 +67,7 @@ func NewMessage(input string) Message {
 	}
 
 	for _, parser := range GetRegisteredParsers() {
-		err := parser.Parse(&message, &rm)
+		err := parser.Parse(message, &rm)
 		if err != nil {
 			jww.ERROR.Printf("Error parsing: %s\n", err.Error())
 		}
@@ -85,5 +77,26 @@ func NewMessage(input string) Message {
 		message.HTML = strings.Replace(message.HTML, key, value, 1)
 	}
 
+}
+
+func UpdateMessage(input string, message *Message) {
+	message.Attributes = make(map[string]Attr)
+	message.Original = input
+	message.HTML = input
+	message.Tags = make([]string, 0)
+	message.URLs = make([]string, 0)
+	ApplyToMessage(input, message)
+}
+
+func NewMessage(input string) Message {
+	message := Message{
+		ID:         NewUUID(),
+		Original:   input,
+		HTML:       input,
+		Attributes: make(map[string]Attr),
+		Tags:       make([]string, 0),
+		URLs:       make([]string, 0),
+	}
+	ApplyToMessage(input, &message)
 	return message
 }

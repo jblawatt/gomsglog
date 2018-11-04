@@ -20,6 +20,7 @@ var addCmd = &cobra.Command{
 			gomsglog.Persist(msg)
 		} else {
 			fmt.Fprint(os.Stderr, "Please provide a mesage (-m/--message)")
+			os.Exit(1)
 		}
 	},
 }

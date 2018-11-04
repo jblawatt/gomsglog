@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 	"time"
 
@@ -44,7 +45,9 @@ func setupViper() {
 	viper.SetConfigName(".mlrc")
 	viper.AddConfigPath(".")
 	viper.AddConfigPath(os.Getenv("HOME"))
-	viper.AddConfigPath(path.Join(os.Getenv("APPDATA"), "ml"))
+	if runtime.GOOS == "windows" {
+		viper.AddConfigPath(path.Join(os.Getenv("APPDATA"), "ml"))
+	}
 	viper.ReadInConfig()
 
 	viper.SetDefault("database.dialect", "sqlite3")
@@ -52,6 +55,12 @@ func setupViper() {
 	viper.SetDefault("database.debug", false)
 	viper.SetDefault("loglevel", "WARN")
 	viper.SetDefault("debug", false)
+	if runtime.GOOS == "windows" {
+		viper.SetDefault("editor", "notepad")
+	}
+	if runtime.GOOS == "linux" {
+		viper.SetDefault("editor", "vim")
+	}
 
 	setupLog()
 

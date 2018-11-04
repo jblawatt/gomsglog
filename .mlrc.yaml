@@ -11,6 +11,8 @@ parser:
   - urls.so
   - users.so
 
+editor: vim
+
 database:
   debug: false
   dialect: sqlite3

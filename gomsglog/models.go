@@ -173,25 +173,31 @@ func LoadMessage(messageID int) (MessageModel, bool) {
 
 }
 
-func Persist(message parsers.Message) *MessageModel {
-	db := GetDB()
-	defer db.Close()
-
+func makeUrls(message parsers.Message) []URLModel {
 	urls := make([]URLModel, 0)
 	for _, url := range message.URLs {
 		urls = append(urls, URLModel{URL: url})
 	}
+	return urls
+}
 
+func makeTags(message parsers.Message) []TagModel {
 	tags := make([]TagModel, 0)
 	for _, tag := range message.Tags {
 		tags = append(tags, TagModel{Slug: tag, ScreenName: tag})
 	}
+	return tags
+}
 
+func makeUsers(message parsers.Message) []UserModel {
 	users := make([]UserModel, 0)
 	for _, user := range message.RelatedUsers {
 		users = append(users, UserModel{Slug: user, ScreenName: user})
 	}
+	return users
+}
 
+func makeAttrs(message parsers.Message) []AttributeSet {
 	attrs := make([]AttributeSet, 0)
 	for key, val := range message.Attributes {
 		attrs = append(attrs, AttributeSet{
@@ -204,6 +210,39 @@ func Persist(message parsers.Message) *MessageModel {
 			BoolValue:   val.BoolValue,
 		})
 	}
+	return attrs
+}
+
+func Update(id int, message parsers.Message) {
+	db := GetDB()
+	defer db.Close()
+
+	db.Delete(UserModel{}, "message_ref = ?", id)
+	db.Delete(AttributeSet{}, "message_ref = ?", id)
+	db.Delete(TagModel{}, "message_ref = ?", id)
+	db.Delete(URLModel{}, "message_ref = ?", id)
+
+	var model MessageModel
+	db.First(&model, id)
+	model.Attributes = makeAttrs(message)
+	model.RelatedUsers = makeUsers(message)
+	model.Tags = makeTags(message)
+	model.URLs = makeUrls(message)
+
+	model.HTML = message.HTML
+	model.Original = message.Original
+
+	db.Save(&model)
+}
+
+func Persist(message parsers.Message) *MessageModel {
+	db := GetDB()
+	defer db.Close()
+
+	urls := makeUrls(message)
+	tags := makeTags(message)
+	users := makeUsers(message)
+	attrs := makeAttrs(message)
 
 	m := MessageModel{
 		Original:     message.Original,

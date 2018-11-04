@@ -18,6 +18,6 @@ var serveCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(serveCmd)
-	serveCmd.PersistentFlags().StringP("bind", "b", ":1234", "Where to bind to.")
+	serveCmd.PersistentFlags().StringP("bind", "b", "127.0.0.1:1234", "Where to bind to.")
 	viper.BindPFlag("bind", serveCmd.PersistentFlags().Lookup("bind"))
 }
