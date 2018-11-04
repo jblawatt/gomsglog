@@ -19,17 +19,18 @@ var infoCmd = &cobra.Command{
 			"- Date:",
 			gomsglog.GetBuildDate(),
 		)
-		fmt.Print("Options :: ")
-		fmt.Printf("DEBUG = %t; ", viper.GetBool("debug"))
-		fmt.Printf("BIND = %s; ", viper.GetString("bind"))
-		fmt.Printf("LOG.TEMPLATE = %d; ", viper.GetInt("log.limit"))
-		fmt.Printf("LOG.OFFSET = %d; ", viper.GetInt("log.offset"))
-		fmt.Printf("LOGLEVEL = %s; ", viper.GetString("LOGLEVEL"))
-		fmt.Printf("LOGFILE = %s; ", viper.GetString("logfile"))
-		fmt.Printf("DATABASE.DIALECT = %s; ", viper.GetString("database.dialect"))
-		fmt.Printf("DATABASE.CONNECTIONSTRING = %s; ", viper.GetString("database.connectionstring"))
-		fmt.Printf("DATABASE.DEBUG = %t; ", viper.GetBool("database.debug"))
-		fmt.Printf("MLRC = %s", viper.ConfigFileUsed())
+		fmt.Print("Options :: \n")
+		fmt.Printf("DEBUG = %t\n", viper.GetBool("debug"))
+		fmt.Printf("BIND = %s\n", viper.GetString("bind"))
+		fmt.Printf("LOG.TEMPLATE = %d\n", viper.GetInt("log.limit"))
+		fmt.Printf("LOG.OFFSET = %d\n", viper.GetInt("log.offset"))
+		fmt.Printf("LOGLEVEL = %s\n", viper.GetString("LOGLEVEL"))
+		fmt.Printf("LOGFILE = %s\n", viper.GetString("logfile"))
+		fmt.Printf("DATABASE.DIALECT = %s\n", viper.GetString("database.dialect"))
+		fmt.Printf("DATABASE.CONNECTIONSTRING = %s\n", viper.GetString("database.connectionstring"))
+		fmt.Printf("DATABASE.DEBUG = %t\n", viper.GetBool("database.debug"))
+		fmt.Printf("MLRC = %s\n", viper.ConfigFileUsed())
+		fmt.Printf("EDITOR = %s\n", viper.GetString("editor"))
 
 	},
 }

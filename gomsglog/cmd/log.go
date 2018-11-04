@@ -3,6 +3,9 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"os"
+	"runtime"
 	"strings"
 	"text/template"
 
@@ -40,6 +43,14 @@ var templates = map[string]*template.Template{
 	"complete": template.New("complete"),
 }
 
+func writer() io.Writer {
+	if runtime.GOOS == "windows" {
+		return color.Output
+	} else {
+		return os.Stdout
+	}
+}
+
 var logCmd = &cobra.Command{
 	Use:     "log",
 	Short:   "Lists all messages.",
@@ -52,7 +63,18 @@ var logCmd = &cobra.Command{
 		tags, _ := flags.GetStringArray("tag")
 		users, _ := flags.GetStringArray("user")
 		attrs, _ := flags.GetStringArray("attr")
-		messages := gomsglog.LoadMessages(limit, offset, tags, users, attrs)
+		id, _ := flags.GetInt("id")
+		var messages []gomsglog.MessageModel
+		if id > 0 {
+			message, found := gomsglog.LoadMessage(id)
+			if !found {
+				fmt.Printf("Cannot find message with id %d", id)
+				os.Exit(1)
+			}
+			messages = append(messages, message)
+		} else {
+			messages = gomsglog.LoadMessages(limit, offset, tags, users, attrs)
+		}
 		for i := len(messages) - 1; i >= 0; i-- {
 			msg := messages[i]
 			var buf bytes.Buffer
@@ -61,7 +83,7 @@ var logCmd = &cobra.Command{
 			for _, cutset := range []string{" ", "\t", "\n"} {
 				output = strings.Trim(output, cutset)
 			}
-			fmt.Println(output)
+			fmt.Fprintln(writer(), output)
 			if i != 0 {
 				fmt.Println("")
 			}
@@ -78,6 +100,7 @@ func init() {
 	flags.StringArrayP("user", "u", []string{}, "Users to filter")
 	flags.StringArrayP("tag", "t", []string{}, "Tags to filter")
 	flags.StringArrayP("attr", "a", []string{}, "Attributes to filter")
+	flags.IntP("id", "i", 0, "Message ID")
 
 	viper.BindPFlag("log.template", flags.Lookup("template"))
 	viper.BindPFlag("log.limit", flags.Lookup("limit"))

@@ -48,6 +48,9 @@ func setupViper() {
 	if runtime.GOOS == "windows" {
 		viper.AddConfigPath(path.Join(os.Getenv("APPDATA"), "ml"))
 	}
+	if runtime.GOOS == "linux" {
+		viper.AddConfigPath(path.Join(os.Getenv("HOME"), ".config", "ml"))
+	}
 	viper.ReadInConfig()
 
 	viper.SetDefault("database.dialect", "sqlite3")

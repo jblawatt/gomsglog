@@ -1,5 +1,6 @@
 debug: false
-logfile: out.log
+# logfile: out.log
+logfile: stdout
 loglevel: DEBUG
 
 log:

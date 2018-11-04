@@ -125,11 +125,15 @@ func GetTagsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAttrsHandler(w http.ResponseWriter, r *http.Request) {
-
+	db := gomsglog.GetDB()
+	var attrs []string
+	db.Model(&gomsglog.AttributeSet{}).Pluck(`DISTINCT "slug"`, &attrs)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(&attrs)
 }
 
 func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
-	
+
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
