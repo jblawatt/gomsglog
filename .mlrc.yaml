@@ -1,10 +1,11 @@
-debug: false
+debug: true
 # logfile: out.log
 logfile: stdout
 loglevel: DEBUG
 
 log:
-  template: default
+#   template: default
+  template: short
 
 parser:
   - attrs.so
@@ -14,7 +15,25 @@ parser:
 
 editor: vim
 
+
+serve:
+  host: 127.0.0.1
+  port: 1234
+  auth:
+    user: admin
+    password: admin
+
 database:
   debug: false
   dialect: sqlite3
   connectionstring: C:/Users/jblaw/ml.sqlite3
+  # dialect: postgres
+  # connectionString: host=192.168.178.39 user=gomsglog password=gomsglog dbname=gomsglog
+
+
+tags:
+  synonymes:
+    foo:
+      - fo
+      - fooo
+

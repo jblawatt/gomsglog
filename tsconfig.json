@@ -1,0 +1,14 @@
+{
+    "$schema": "https://schemastore.azurewebsites.net/schemas/json/tsconfig.json",
+    "compilerOptions": {
+        "target": "es5",
+        "module": "es6",
+        "noImplicitAny": false,
+        "jsx": "react",
+        "jsxFactory": "m",
+        "allowJs": true,
+        "outDir": "./static/dist",
+        "sourceMap": true,
+        "importHelpers": true
+    }
+}

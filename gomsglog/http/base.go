@@ -15,6 +15,7 @@ func Serve(addr string) {
 
 	router := mux.NewRouter()
 	// router.HandleFunc("/spec", )
+
 	router.HandleFunc("/api/messages", CreateMessageHandler).Methods("POST")
 	router.HandleFunc("/api/messages", GetMessagesHandler).Methods("GET")
 	router.HandleFunc("/api/messages/{messageID}", GetMessageHandler).Methods("GET")
@@ -24,6 +25,12 @@ func Serve(addr string) {
 	router.HandleFunc("/api/attrs", GetAttrsHandler).Methods("GET")
 	router.PathPrefix("/static").Handler(http.FileServer(http.Dir("./")))
 	router.HandleFunc("/", IndexHandler).Methods("GET")
+	// router.HandleFunc("/delete-message/{messageID}", func(w http.ResponseWriter, r *http.Request) {
+	// 	vars := mux.Vars(r)
+	// 	messageID, _ := strconv.Atoi(vars["messageID"])
+	// 	if gomsglog.DeleteMessage(messageID)
+	// }).Methods("GET")
+	router.HandleFunc("/submit-message", SubmitMessageHandler).Methods("POST")
 	router.HandleFunc("/ws", WebSocketHandler)
 
 	loggingRouter := handlers.LoggingHandler(os.Stdout, router)

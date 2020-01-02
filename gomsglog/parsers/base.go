@@ -13,9 +13,10 @@ type Message struct {
 	ID           string
 	Original     string
 	HTML         string
+	Archived     bool
 	RelatedUsers []string
 	Tags         []string
-	Attributes   map[string]Attr
+	Attributes   []Attr
 	URLs         []string
 }
 
@@ -77,10 +78,12 @@ func ApplyToMessage(input string, message *Message) {
 		message.HTML = strings.Replace(message.HTML, key, value, 1)
 	}
 
+	message.HTML = strings.Replace(message.HTML, "\n", "<br />", 1)
+
 }
 
 func UpdateMessage(input string, message *Message) {
-	message.Attributes = make(map[string]Attr)
+	message.Attributes = make([]Attr, 0)
 	message.Original = input
 	message.HTML = input
 	message.Tags = make([]string, 0)
@@ -93,7 +96,7 @@ func NewMessage(input string) Message {
 		ID:         NewUUID(),
 		Original:   input,
 		HTML:       input,
-		Attributes: make(map[string]Attr),
+		Attributes: make([]Attr, 0),
 		Tags:       make([]string, 0),
 		URLs:       make([]string, 0),
 	}

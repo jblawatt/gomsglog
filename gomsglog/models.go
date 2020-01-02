@@ -3,7 +3,6 @@ package gomsglog
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -11,9 +10,10 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/viper"
 
-	jww "github.com/spf13/jwalterweatherman"
-
 	// Datenbank Dialekt einbinden.
+	_ "github.com/jinzhu/gorm/dialects/mssql"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
@@ -22,10 +22,15 @@ type MessageModel struct {
 	Original     string
 	HTML         string
 	Created      time.Time
+	Archived     bool
 	Tags         []TagModel     `gorm:"ForeignKey:MessageRef"`
 	RelatedUsers []UserModel    `gorm:"ForeignKey:MessageRef"`
 	Attributes   []AttributeSet `gorm:"ForeignKey:MessageRef"`
 	URLs         []URLModel     `gorm:"ForeignKey:MessageRef"`
+}
+
+func (m *MessageModel) HasTagsOrRelatedUsers() bool {
+	return (len(m.Tags) > 0 || len(m.RelatedUsers) > 0)
 }
 
 type TagModel struct {
@@ -81,20 +86,28 @@ func AutoMigrate() {
 		&TagModel{},
 	)
 
+	db.Model(&MessageModel{}).
+		Where("archived is null").
+		Update("archived", false)
+
 }
 
 func GetDB() *gorm.DB {
 	dbpath := viper.GetString("database.connectionstring")
-	dbabspath, pathError := filepath.Abs(dbpath)
-	if pathError != nil {
-		fmt.Fprintf(os.Stderr, "Error loading absolute database path %s.", dbpath)
+	// dbabspath, pathError := filepath.Abs(dbpath)
+	// if pathError != nil {
+	// 	fmt.Fprintf(os.Stderr, "Error loading absolute database path %s.", dbpath)
+	// 	os.Exit(1)
+	// }
+	// jww.DEBUG.Printf("Loading Database from %s", dbabspath)
+	db, err := gorm.Open(
+		viper.GetString("database.dialect"),
+		dbpath,
+	)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR OPENING DB: %s\n", err.Error())
 		os.Exit(1)
 	}
-	jww.DEBUG.Printf("Loading Database from %s", dbabspath)
-	db, _ := gorm.Open(
-		viper.GetString("database.dialect"),
-		dbabspath,
-	)
 	debug := viper.GetBool("database.debug")
 	if debug {
 		db.LogMode(true)
@@ -104,7 +117,20 @@ func GetDB() *gorm.DB {
 
 }
 
-func LoadMessages(limit int, offset int, tags []string, users []string, attrs []string) []MessageModel {
+type MessagesQuery struct {
+	Limit    int
+	Offest   int
+	Tags     []string
+	Users    []string
+	Attrs    []string
+	Archived bool
+}
+
+func NewMessagesQuery() MessagesQuery {
+	return MessagesQuery{}
+}
+
+func LoadMessages(limit int, offset int, tags []string, users []string, attrs []string, archived bool) []MessageModel {
 	db := GetDB()
 	defer db.Close()
 
@@ -134,7 +160,6 @@ func LoadMessages(limit int, offset int, tags []string, users []string, attrs []
 	}
 
 	if len(attrs) > 0 {
-		fmt.Println("HAVE ATTRS")
 		query = query.Joins(
 			`JOIN "attribute_sets"
 				ON "attribute_sets"."message_ref" = "message_models"."id"`,
@@ -147,6 +172,7 @@ func LoadMessages(limit int, offset int, tags []string, users []string, attrs []
 	}
 
 	query.
+		Where(`archived = ?`, archived).
 		Order(`"message_models"."created_at" DESC`).
 		Limit(limit).
 		Offset(offset).
@@ -199,10 +225,10 @@ func makeUsers(message parsers.Message) []UserModel {
 
 func makeAttrs(message parsers.Message) []AttributeSet {
 	attrs := make([]AttributeSet, 0)
-	for key, val := range message.Attributes {
+	for _, val := range message.Attributes {
 		attrs = append(attrs, AttributeSet{
-			Slug:        key,
-			ScreenName:  key,
+			Slug:        val.Slug,
+			ScreenName:  val.ScreenName,
 			Type:        val.Type,
 			StringValue: val.StringValue,
 			DateValue:   val.DateValue,
@@ -231,8 +257,16 @@ func Update(id int, message parsers.Message) {
 
 	model.HTML = message.HTML
 	model.Original = message.Original
+	model.Archived = message.Archived
 
 	db.Save(&model)
+}
+
+func Archive(id int) {
+	db := GetDB()
+	defer db.Close()
+
+	db.Model(&MessageModel{}).Where("id = ?", id).Update("archived", true)
 }
 
 func Persist(message parsers.Message) *MessageModel {
@@ -243,6 +277,9 @@ func Persist(message parsers.Message) *MessageModel {
 	tags := makeTags(message)
 	users := makeUsers(message)
 	attrs := makeAttrs(message)
+
+	fmt.Println(time.Now())
+	fmt.Println("hello world")
 
 	m := MessageModel{
 		Original:     message.Original,

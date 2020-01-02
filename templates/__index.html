@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>gomsglog</title>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.css">
+    <style>
+        .gml-item {
+            font-style: italic
+        }
+
+        .gml-item.gml-item__user {
+            color: purple;
+        }
+
+        body {
+            background: url(https://picsum.photos/1900) no-repeat;
+        }
+    </style>
+</head>
+
+<body>
+    <h3 class="ui center aligned header">
+        GO Message Log
+    </h3>
+    <div class="ui text container">
+        <!-- <div class="ui four column doubling stackable grid container"> -->
+        <div class="ui segments">
+            <div class="ui segment">
+                <div class="ui form">
+                    <form action="/submit-message" method="post">
+                        <div class="field">
+                            <label for="">Your Message</label>
+                            <textarea name="message" rows="3"
+                                style="font-family: monospace">{{if .EditMessage}}{{.EditMessageContent}}{{end}}</textarea>
+                            {{if .EditMessage}}
+                            <input type="hidden" name="message-id" value="{{.EditMessageID}}">
+                            {{end}}
+                        </div>
+                        <div>
+                            <button class="ui button fluid">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="ui segment">
+                <div class="ui left rail">
+                    <div class="ui segment">
+                        filter here
+                    </div>
+                </div>
+                <div class="ui three column grid">
+                    {{range $msg := .Messages}}
+                    <div class="column">
+                        <div class="ui fluid card">
+                            <div class="content">
+                                <i class="right floated pin icon"></i>
+                                <div class="meta">{{$msg.Created.Format "Jan 02, 2006 15:04" }}</div>
+                                <div class="description">
+                                    {{$msg.HTML | safeHTML}}
+                                </div>
+                            </div>
+                            {{if .HasTagsOrRelatedUsers}}
+                            <div class="content extra">
+                                {{$tags := $msg.Tags}}
+                                {{range $tag := $tags}}
+                                <span class="ui label teal" data-tag="{{$tag.Slug}}">
+                                    <i class="icon tag"></i>
+                                    {{$tag.ScreenName}}
+                                </span>
+                                {{end}}
+                                <ul>
+                                    {{range $user := .RelatedUsers}}
+                                    <li>{{$user.ScreenName}}</li>
+                                    {{end}}
+                                </ul>
+                            </div>
+                            {{end}}
+                            <div class="content extra">
+                                <span class="right floated">
+                                    <a href="" title="abhaken">
+                                        <i class="check icon"></i>
+                                    </a>
+                                </span>
+                                <span class="left floated">
+                                    <a href="?edit={{.ID}}" title="ändern">
+                                        <i class="pencil icon"></i>
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.js"></script>
+</body>
+
+</html>

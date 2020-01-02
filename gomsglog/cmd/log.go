@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -18,6 +19,7 @@ import (
 var COMPLETE_TEMPLATE = `
 ID:      {{.ID}}
 Date:    {{.Created.Format "2006-01-02 15:04"}}
+Archive: {{.Archived | hicyan_bool }}
 {{ "Message:" | hired }} {{.Original | hired }}
 Tags:    {{range .Tags}}#{{.ScreenName}} {{end}}
 Users:   {{range .RelatedUsers}}@{{.ScreenName}} {{end}}
@@ -63,6 +65,7 @@ var logCmd = &cobra.Command{
 		tags, _ := flags.GetStringArray("tag")
 		users, _ := flags.GetStringArray("user")
 		attrs, _ := flags.GetStringArray("attr")
+		archived, _ := flags.GetBool("archived")
 		id, _ := flags.GetInt("id")
 		var messages []gomsglog.MessageModel
 		if id > 0 {
@@ -73,17 +76,20 @@ var logCmd = &cobra.Command{
 			}
 			messages = append(messages, message)
 		} else {
-			messages = gomsglog.LoadMessages(limit, offset, tags, users, attrs)
+			messages = gomsglog.LoadMessages(limit, offset, tags, users, attrs, archived)
 		}
 		for i := len(messages) - 1; i >= 0; i-- {
 			msg := messages[i]
 			var buf bytes.Buffer
-			templates[templ].Execute(&buf, msg)
+			err := templates[templ].Execute(&buf, msg)
 			output := buf.String()
 			for _, cutset := range []string{" ", "\t", "\n"} {
 				output = strings.Trim(output, cutset)
 			}
 			fmt.Fprintln(writer(), output)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "ERROR PARSING TEMPLATE", err.Error())
+			}
 			if i != 0 {
 				fmt.Println("")
 			}
@@ -101,6 +107,7 @@ func init() {
 	flags.StringArrayP("tag", "t", []string{}, "Tags to filter")
 	flags.StringArrayP("attr", "a", []string{}, "Attributes to filter")
 	flags.IntP("id", "i", 0, "Message ID")
+	flags.BoolP("archived", "A", false, "Show archived items")
 
 	viper.BindPFlag("log.template", flags.Lookup("template"))
 	viper.BindPFlag("log.limit", flags.Lookup("limit"))
@@ -122,6 +129,9 @@ func init() {
 		"hicyan":    color.HiCyanString,
 		"hiwhite":   color.HiWhiteString,
 		"hiblack":   color.HiBlackString,
+		"hicyan_bool": func(value bool) string {
+			return color.HiCyanString(strconv.FormatBool(value))
+		},
 	}
 
 	templates["default"].Funcs(funcMap)

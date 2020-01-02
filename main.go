@@ -23,13 +23,14 @@ var (
 )
 
 func main() {
-	setupViper()
 	setVersionInfo(binary, version, builDate)
+	setupViper()
 
 	if err := cmd.RootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
+
 }
 
 func setVersionInfo(binary string, version string, build string) {
@@ -90,7 +91,7 @@ func setupLog() {
 			jww.SetLogThreshold(t)
 		}
 	}
-	if logfile != "" || logfile == "stdout" {
+	if logfile != "" && logfile != "stdout" {
 		f, _ := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		log.SetOutput(f)
 		jww.SetLogOutput(f)

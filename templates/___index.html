@@ -1,0 +1,131 @@
+<html>
+
+    <head>
+        <title>GoMSG-Log</title>
+        <!-- <link rel="stylesheet"
+            href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.2.1/css/bootstrap.css"> -->
+        <link rel="stylesheet"
+            href="https://bootswatch.com/4/lux/bootstrap.min.css">
+        <link
+            href="https://fonts.googleapis.com/css?family=Caveat|Permanent+Marker"
+            rel="stylesheet">
+        <link rel="stylesheet" href="/static/styles/styles.css">
+        <style>
+        @import url('https://fonts.googleapis.com/css?family=Amatic+SC|PT+Sans');
+        /* body {
+            font-family: "PT Sans";
+            font-size: 5px;
+        } */
+
+        .card-body {
+            font-family: 'Caveat', cursive;
+        }
+
+        h1, h2 {
+            
+    font-family: 'Permanent Marker', cursive;
+
+        }
+
+        thead {
+            font-family: "Amatic SC";
+        }
+
+        .gml-item {
+            font-weight: bold;
+        }
+
+        .gml-item:before {
+            color: lawngreen;
+        }
+
+        .gml-item__tag:before {
+            content: "#"
+        }
+
+        .gml-item__user:before {
+            content: "@"
+        }
+
+        .gml-item__attr:before {
+            content: "$"
+        }
+
+        table tbody tr {
+            opacity: 1;
+            transition: opacity 2s linear;
+        }
+    </style>
+    </head>
+
+    <body>
+        <header class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                    <h1>Jenko's Brain Log</h1>
+                </div>
+            </div>
+        </header>
+        <section class="input-section container"
+            style="background-color: silver;">
+            <div class="row">
+                <div class="col-xs-12">
+                    <form action="">
+                        <div class="form-group">
+                            <textarea name="" id="" cols="30" rows="10"></textarea>
+                        </div>
+                        <button class="btn btn-primary">submit</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+        <section class="items-section container"
+            id="items-section-container">
+            <div class="row">
+                <div class="col-xs-12">
+                    <h2>
+                        // 20.11.1985
+                    </h2>
+                    <br>
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="card-text">
+                                hello <a href="...">@world</a> das hier ist ein
+                                test
+                                für mich. hurraa
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <small>
+                                20.11.1085 - jens blawatt ..
+                            </small>
+                            <span class="badge badge-primary">foobar</span>
+                            <span class="badge badge-primary">hello world</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="card-text">
+                                hello <a href="...">@world</a> das hier ist ein
+                                test
+                                für mich. hurraa
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <small>
+                                20.11.1085 - jens blawatt ..
+                            </small>
+                            <span class="badge badge-primary">foobar</span>
+                            <span class="badge badge-primary">hello world</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+        <script src="//unpkg.com/mithril"></script>
+        <script src="/static/js/app.js"></script>
+    </body>
+
+</html>

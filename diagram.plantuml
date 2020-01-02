@@ -1,0 +1,27 @@
+@startuml tets1
+
+class Human {
+    + age: int
+    + get_name() : str
+    + __init__(self): None
+}
+class Boy
+class Girl
+
+Boy <|-- Human
+Girl <|-- Human
+
+@enduml
+
+@startuml zwei
+
+node iddjapp01 as a01
+node iddjbatch01 as b01
+node iddjworker01 as w01
+
+w01 --|> b01 : hello\nworld
+a01 -> b01 : foobar
+
+artifact shop12345.tar.gz
+
+@enduml

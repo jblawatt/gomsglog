@@ -1,10 +1,16 @@
 #!/usr/bin/env make
 
 ml:
-	go build -o ml.exe -ldflags "-X main.version=0.1 -X main.binary=ml" -v -x
+	go build -o ml.exe -ldflags "-X main.version=0.1 -X main.binary=ml" -x
 
-js:
-	node node_modules/.bin/babel static/js/gomsglog.jsx --out-dir . --source-maps
+bindata:
+	# ....
+
+node_modules:
+	npm install
+
+js: node_modules
+	npm run build
 
 %.so:
 	go build -buildtype=plugin -o %.so
@@ -12,3 +18,11 @@ js:
 
 clean:
 	rm ml.exe
+	rm node_modules
+
+
+serve:
+	go run main.go serve
+
+
+.PHONY: clean

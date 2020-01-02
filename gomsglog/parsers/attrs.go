@@ -21,8 +21,21 @@ type Attr struct {
 
 type AttrsParser struct{}
 
+func contains(a []string, x string) bool {
+	for _, n := range a {
+		if x == n {
+			return true
+		}
+	}
+	return false
+}
+
+const ATTR_FULL = 1
+const ATTR_KEY = 2
+const ATTR_VALUE = 3
+
 func (p AttrsParser) Parse(m *Message, rm *ReplacementManager) error {
-	attrRe := regexp.MustCompile(`\&(\w+)[=:]([\w\-]+)`)
+	attrRe := regexp.MustCompile(`\$((\w+)[=:]([\w\-]+))`)
 	for _, match := range attrRe.FindAllStringSubmatch(m.Original, -1) {
 		replID := NewUUID()
 		m.HTML = strings.Replace(m.HTML, match[0], replID, 1)
@@ -30,30 +43,30 @@ func (p AttrsParser) Parse(m *Message, rm *ReplacementManager) error {
 			replID,
 			fmt.Sprintf(
 				`<span class="gml-item gml-item__attr" data-gml-key="%s" data-gml-value="%s">%s</span>`,
-				match[1],
-				match[2],
-				match[2],
+				match[ATTR_KEY],
+				match[ATTR_VALUE],
+				match[ATTR_FULL],
 			),
 		)
 
 		parserHit := false
 
 		for _, p := range attrParser {
-			if p.GetSlug() == strings.ToLower(match[1]) {
-				m.Attributes[match[1]] = p.Parse(match[2])
-				fmt.Println(m.Attributes[match[1]])
+			foundSlug := strings.ToLower(match[2])
+			if p.GetSlug() == foundSlug || contains(p.GetAlias(), foundSlug) {
+				m.Attributes = append(m.Attributes, p.Parse(match[ATTR_VALUE]))
 				parserHit = true
 				break
 			}
 		}
 
 		if !parserHit {
-			m.Attributes[match[1]] = Attr{
-				Slug:        match[1],
-				ScreenName:  match[1],
+			m.Attributes = append(m.Attributes, Attr{
+				Slug:        match[ATTR_KEY],
+				ScreenName:  match[ATTR_KEY],
 				Type:        "string",
-				StringValue: match[2],
-			}
+				StringValue: match[ATTR_VALUE],
+			})
 		}
 
 	}
@@ -114,8 +127,30 @@ func (h *HoursAttrParser) Parse(value string) Attr {
 	}
 }
 
+type QuoteAttrParser struct{}
+
+func (q *QuoteAttrParser) GetSlug() string {
+	return "quote"
+}
+
+func (h *QuoteAttrParser) GetAlias() []string {
+	return []string{"quo"}
+}
+
+func (h *QuoteAttrParser) Parse(value string) Attr {
+	valueInt, _ := strconv.Atoi(value)
+	return Attr{
+		Slug:        "quote",
+		ScreenName:  "quote",
+		Type:        "int",
+		StringValue: value,
+		IntValue:    int64(valueInt),
+	}
+}
+
 func init() {
 	RegisterParser(&AttrsParser{})
 	RegisterAttrParser(&DueAttrParser{})
 	RegisterAttrParser(&HoursAttrParser{})
+	RegisterAttrParser(&QuoteAttrParser{})
 }
